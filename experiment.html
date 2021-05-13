@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="jspsych/jspsych.js"></script>
+  <script src="jspsych/plugins/jspsych-html-button-response.js"></script>
+  <script src="jspsych/plugins/jspsych-html-keyboard-response.js"></script>
+  <script src="jspsych/plugins/jspsych-instructions.js"></script>
+  <script src="jspsych/plugins/jspsych-survey-html-form.js"></script>
+  <link href="jspsych/css/jspsych.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body></body>
+<script>
+
+
+  // Welcome
+  var welcome = {
+    data: {
+      screen_id: "welcome"
+    },
+    type: "html-button-response",
+    stimulus: "Welcome to the experiment!",
+    choices: ["Click here to continue"],
+    margin_vertical: "50px"
+  };
+
+  // Experiment instructions
+  var instructions = {
+    type: 'instructions',
+    pages: [
+      '<p>You have been endowed with 20 guesses for the outcome from flipping a fair coin.</p>',
+      '<p>Each correct guess will add 10 SEK to your in game wallet.</p>',
+      '<p>The outcome for each toss will be presented before the next round.</p>',
+      '<p>The person with the most money in their wallet will be rewarded their wallet amount in real money 1st of June 2021.</p> ' +
+      '<p>Make sure you enter you email adress at the end!</p>',
+    ],
+    show_clickable_nav: true
+  };
+
+  // Practice Trial
+  var toss = {
+    type: "html-button-response",
+    data: {screen_id: "trial"},
+    stimulus: "<img src=fair_coin.png height=100 width=200>",
+    margin_vertical: '50px',
+    choices: ['Heads', 'Tails'],
+    on_finish: function(data) {
+      data.correct_response = random_toss();
+
+      //TODO: ADD FUNCTION FOR MONEY WON!
+      //TODO: ADD FUNCTION FOR SEEING STREAK LENGTH AND IF PERSON BETS INTO STREAK OR AGAINST!
+      //TODO: GATHER EMAIL INFORMATION.
+      //TODO: DEBRIEFING WITH STATISTICS.
+      if (data.response == data.correct_response) {
+        data.correct = true;
+      } else {
+          data.correct = false;
+      }
+      if (data.response == 0) {
+        data.guess = 'heads';
+      } else {
+          data.guess = 'tails';
+      }
+      if (data.correct_response == 0) {
+        data.outcome = 'heads';
+      } else {
+          data.outcome = 'tails';
+      }
+    }
+  };
+
+
+  // Feedback
+  var feedback = {
+    data: {screenId: "feedback"},
+    type: "html-keyboard-response",
+    stimulus: function() {
+      var last_trial = jsPsych.data.get().last(1).values()[0].correct;
+      var last_outcome = jsPsych.data.get().last(1).values()[0].outcome;
+      if (last_trial == true) {
+        if (last_outcome == 'heads') {
+          return "<img src=head.png height=200 width=200><p>You win! It's heads!</p>";
+        } else {
+          return "<img src=tail.png height=200 width=200><p>You win! It's tails!</p>";
+        }
+      } else {
+          if (last_outcome == 'heads') {
+            return "<img src=head.png height=200 width=200><p>You lost that toss, it landed heads.</p>";
+          } else {
+            return "<img src=tail.png height=200 width=200><p>You lost that toss, it landed tails.</p>";
+            }
+        }
+    },
+    choice: jsPsych.NO_KEYS,
+    trial_duration: 3000
+  };
+
+  // Experimental trials
+  var trial_loop = {
+      timeline: [toss, feedback],
+      repetitions: 10
+  }
+
+  
+  // Debrief
+
+  // Timeline
+  timeline = [];
+  timeline.push(instructions);
+  timeline.push(trial_loop);
+  
+
+  // Start Experiment
+  jsPsych.init({
+    timeline: timeline,
+    on_finish: function() {
+      jsPsych.data.displayData()
+    }
+  })
+  
+  // Function for generating random toss
+  function random_toss() {
+    var toss = Math.floor(Math.random() * 2);
+    return toss;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+  var timeline = [];
+  var credits = 20;
+
+
+
+  var toss = {
+    type: 'html-button-response',
+    stimulus: '<img src=fair_coin.png height=100 width=200>',
+    prompt: '<p>Heads or Tails?</p>',
+    choices: ['Heads', 'Tails'],
+    margin_vertical: '50px',
+    on_finish: function(data){
+      if(jsPsych.data.get().last(1).values()[0].response == random_toss()) {
+        data.correct = true;
+      } else {
+        data.correct = false;
+      }
+      jsPsych.data.displayData()
+    }
+  };
+
+  var feedback_toss = {
+    stimulus: function() {
+
+    }
+  }
+
+  var form_trial = {
+		type: 'survey-html-form',
+		preamble: '<p> Enter email-adress </p>',
+		html: '<p><input name="email" type="text" /></p>'
+	}
+
+  jsPsych.init({
+    timeline: [welcome, toss, toss, toss, toss, toss, toss, toss, toss, toss, toss, toss, toss, toss, toss, toss, toss, toss, toss, toss, toss, form_trial],
+    on_finish: function(){
+      jsPsych.data.displayData();
+    }
+  })
+*/
+</script>
+</html>
